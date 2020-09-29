@@ -1,26 +1,58 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { useState } from "react";
+import { useQuery } from "react-query";
+import { ReactQueryDevtools } from "react-query-devtools";
 
-function App() {
+import "./App.css";
+
+export default function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div>
+      <Exchange />
+      <ReactQueryDevtools initialIsOpen={false} />
     </div>
   );
 }
 
-export default App;
+const fetchExchange = async (currency) => {
+  const response = await fetch(
+    `http://api.ratesapi.io/latest?base=${currency}`
+  );
+  const data = await response.json();
+  return data;
+};
+
+function Exchange() {
+  const [currency, setCurrency] = useState("USD");
+  const { status, data, error } = useQuery(currency, fetchExchange);
+
+  if (status === "loading") return <div>loading ...</div>;
+  if (status === "error") return <div>Oop error !!</div>;
+  return (
+    <div>
+      <button
+        onClick={() => {
+          setCurrency("CAD");
+        }}
+      >
+        CAD
+      </button>
+      <button
+        onClick={() => {
+          setCurrency("USD");
+        }}
+      >
+        USD
+      </button>
+      <button
+        onClick={() => {
+          setCurrency("EUR");
+        }}
+      >
+        EUR
+      </button>
+
+      <h2>Showing Currency {currency}</h2>
+      <pre>{JSON.stringify(data, null, 2)}</pre>
+    </div>
+  );
+}
